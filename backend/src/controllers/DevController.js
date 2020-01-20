@@ -2,6 +2,7 @@ const axios = require('axios');
 const Dev = require('../models/Dev');
 const parseStringAsArray = require('../utils/parseStringAsArray');
 const mountDevData = require('../utils/mountDevData');
+const {findConnections, sendMessage} = require('../websocket');
 
 module.exports = {
 
@@ -10,7 +11,7 @@ module.exports = {
         return response.json(devs);
     },
 
-    async store(request, response) {
+    async store2(request, response) {
     
         const {github_username} = request.body;
 
@@ -28,12 +29,22 @@ module.exports = {
                 techs: devData.techs,
                 location: devData.location
             })
+
+            const {latitude, longitude} = devData.location;
+            //Filtrar as conexões que estão há no máximo 10Km de distância
+            //e que o novo dev tenha pelo menos uma das tecnologias filtradas
+            const sendSocketMessageTo = findConnections(
+                {latitude, longitude}, 
+                devData.techs
+            );
+
+            sendMessage(sendSocketMessageTo, 'new-dev', dev);
         }
     
         return response.json(dev);
     },
 
-    async store2(request, response) {
+    async store(request, response) {
         const {github_username, techs, latitude, longitude} = request.body;
     
         let dev = await Dev.findOne({github_username});
@@ -59,6 +70,13 @@ module.exports = {
                 techs: techsArray,
                 location
             })
+
+            const sendSocketMessageTo = findConnections(
+                {latitude, longitude}, 
+                techsArray
+            );
+
+            sendMessage(sendSocketMessageTo, 'new-dev', dev);
         }
     
         return response.json(dev);
