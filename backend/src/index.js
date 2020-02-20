@@ -11,11 +11,11 @@ const server = http.Server(app);
 
 setupWebsocket(server);
 
-//MongoDB (Não-relacional)
-mongoose.connect('mongodb+srv://admin:senhorBD123@cluster0-jd99h.mongodb.net/week10?retryWrites=true&w=majority', {
-    useNewUrlParser: true, 
+mongoose.connect('mongodb+srv://<user>:<password>@<cluster>', {
+    useNewUrlParser: true,
     useUnifiedTopology: true
-});
+})
+
 
 app.use(cors());
 app.use(express.json()); //permite que todas as requisições aceitem dentro do body responses do tipo json
